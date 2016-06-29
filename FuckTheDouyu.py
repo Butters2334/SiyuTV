@@ -5,22 +5,11 @@ import urllib2
 import cookielib
 from lxml import etree
 
-
-class LiveRoomData:
-	def __int__(self):
-		pass
-
-	href	= ''
-	pic		= ''
-	platform= ''
-	name 	= ''
-	title	= ''
-	fans	= 0
-	category= ''
+import DataMode
 
 
 
-def douyuTv():
+def getLiveList():
 	url 		=	'http://www.douyu.com/directory/game/How'
 	userAgent	= 	'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.84 Safari/537.36'
 	headers		=	{
@@ -37,26 +26,31 @@ def douyuTv():
 		# print body
 		body = etree.HTML(body)
 		for ele in body.xpath(u'//*[@id="live-list-content"]/ul/li/a'):
-			liveBean = etree.tostring(ele);
+			liveBean 			= etree.tostring(ele);
 			# print liveBean
 			# print type(liveBean)
 			# print '----'*10
-			liveData = LiveRoomData()
-			liveData.platform='斗鱼'
+			liveData 			=	 DataMode.LiveRoomData()
+			liveData.platform	=	u'斗鱼'
 			#地址
-			liveData.href='http://www.douyu.com'+ele.attrib['href']
+			liveData.href		=	'http://www.douyu.com'+ele.attrib['href']
 			# 房间名称
-			liveData.title= ele.attrib['title']
+			liveData.title		= 	ele.attrib['title']
 			# 缩略图
-			liveData.pic=etree.HTML(liveBean).xpath(u'//span/img')[0].attrib['data-original']
+			liveData.pic		=	etree.HTML(liveBean).xpath(u'//span/img')[0].attrib['data-original']
 			# 房间名称
 			# liveData.title=etree.HTML(liveBean).xpath(u'//div/div/h3')[0].text
 			# 房间分类
-			liveData.category= etree.HTML(liveBean).xpath(u'//div/div/span')[0].text
+			liveData.category	=	etree.HTML(liveBean).xpath(u'//div/div/span')[0].text
 			# 主播
-			liveData.name=etree.HTML(liveBean).xpath(u'//div/p/span')[0].text
+			liveData.name 		=	etree.HTML(liveBean).xpath(u'//div/p/span')[0].text
 			# 人气 
-			liveData.fans= etree.HTML(liveBean).xpath(u'//div/p/span')[1].text
+			fansStr				=	etree.HTML(liveBean).xpath(u'//div/p/span')[1].text.encode('utf-8')
+			# 人气大于万时特殊处理   13.9万
+			if fansStr.count('万') >0 :
+				fansStr = fansStr.replace('万','')
+				fansStr = float(fansStr)*10000
+			liveData.fans = int(fansStr)
 
 			liveList += [liveData]
 			# liveList.append(liveData)
@@ -67,32 +61,33 @@ def douyuTv():
 	return liveList
 
 
-liveList = douyuTv()
-# print len(liveList)
-for liveBean in liveList:
-	print liveBean.name
+# liveList  = getLiveList()
+# liveList.sort(key = lambda x:x.fans,reverse = True)
+# for liveBean in liveList:
+# 	print liveBean.desc()
+# 	print '--'*10
 
 
 
+"""
+<li class=" "  data-ranktype='1' data-cid='2' data-rid='48699'>
+	<a href="/youyichuiyi" title="衣锦夜行：登顶登顶"  >
+	    <span class="imgbox">
+            <b></b>
+            <i class="black"></i>
+	        <img data-original="http://rpic.douyucdn.cn/z1606/28/15/48699_160628154441.jpg" src="http://shark.douyucdn.cn/app/douyu/res/page/list-item-def-thumb.gif" width="283" height="163">
+	    </span>
 
-
-# <li class=" "  data-ranktype='1' data-cid='2' data-rid='48699'>
-# 	<a href="/youyichuiyi" title="衣锦夜行：登顶登顶"  >
-# 	    <span class="imgbox">
-#             <b></b>
-#             <i class="black"></i>
-# 	        <img data-original="http://rpic.douyucdn.cn/z1606/28/15/48699_160628154441.jpg" src="http://shark.douyucdn.cn/app/douyu/res/page/list-item-def-thumb.gif" width="283" height="163">
-# 	    </span>
-
-# 	    <div class="mes">
-# 	        <div class="mes-tit">
-# 	            <h3 class="ellipsis">衣锦夜行：登顶登顶</h3>
-# 	            <span class="tag ellipsis">炉石传说</span>
-# 	        </div>
-# 	        <p>
-# 	            <span class="dy-name ellipsis fl">衣锦夜行</span>
-# 	            <span class="dy-num fr">8.3万</span>
-# 			</p>
-# 	    </div>
-# 	</a>
-# </li>
+	    <div class="mes">
+	        <div class="mes-tit">
+	            <h3 class="ellipsis">衣锦夜行：登顶登顶</h3>
+	            <span class="tag ellipsis">炉石传说</span>
+	        </div>
+	        <p>
+	            <span class="dy-name ellipsis fl">衣锦夜行</span>
+	            <span class="dy-num fr">8.3万</span>
+			</p>
+	    </div>
+	</a>
+</li>
+"""
