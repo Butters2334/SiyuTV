@@ -21,19 +21,23 @@ def main():
 	sys.setdefaultencoding('utf-8')
 
 	liveList  = []
-	liveList += FuckTheDouyu.getLiveList()
-	print len(liveList)
-	liveList += FuckThePanda.getLiveList()
-	print len(liveList)
-	liveList += FuckTheQuanmin.getLiveList()
-	print len(liveList)
-	liveList += FuckTheHuya.getLiveList()
-	print len(liveList)
+	douyuList = FuckTheDouyu.getLiveList('http://www.douyu.com/directory/game/How')
+	liveList += douyuList
+	print "斗鱼 %d" % len(douyuList)
+	pandaList = FuckThePanda.getLiveList('http://www.panda.tv/cate/hearthstone')
+	liveList += pandaList
+	print "熊猫 %d" % len(pandaList)
+	quanList  = FuckTheQuanmin.getLiveList('http://www.quanmin.tv/json/categories/heartstone/list.json')
+	liveList += quanList
+	print "全民 %d" % len(quanList)
+	huyaList  = FuckTheHuya.getLiveList('http://www.huya.com/g/hearthstone')
+	liveList += huyaList
+	print "YY %d" % len(huyaList)
 
 	liveList.sort(key = lambda x:x.fans,reverse = True)
-	# for liveBean in liveList:
-	# 	print liveBean.desc()
-	# 	print '--'*10
+	for liveBean in liveList:
+		print liveBean.desc()
+		print '--'*10
 
 
 	url 		=	'http://www.douyu.com/directory/game/How'
@@ -61,7 +65,11 @@ def main():
 			liveli.a.div.div.h3.string 				= liveBean.name.encode('utf-8')
 			liveli.a.div.div.span.string 			= liveBean.platform.encode('utf-8')
 			liveli.find(class_='dy-name').string 	= liveBean.title.encode('utf-8') 
-			liveli.find(class_='dy-num').string 	= str(liveBean.fans).encode('utf-8') 
+			if liveBean.fans < 10000 :
+				liveli.find(class_='dy-num').string = str(liveBean.fans).encode('utf-8') 
+			else:
+				liveli.find(class_='dy-num').string = "%.1f万" % (liveBean.fans/10000.0)
+
 
 			ulStr += HTMLParser.HTMLParser().unescape(liveli.prettify().encode('utf-8'))
 
